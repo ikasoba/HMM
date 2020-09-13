@@ -1,0 +1,122 @@
+#include "hspinet.as"; ネット上のモジュールをダウンロードする機能(予定)
+#include "hspext.as"
+version="1.0"
+vername="orange"
+sys_ver="0"
+#module
+#defcfunc nget int intp2
+ varp1=""
+ noteget varp1,intp2
+ return varp1
+#deffunc regetls
+ notesel filels@
+ chdir hsp_dir@+"\\common\\"
+ filels@=""
+ dirlist filels@,"*.as",1
+ dirlist tmp@,"*.hsp",1
+ filels@+tmp@
+ objprm objid@,filels@
+ return
+#deffunc getdls
+ notesel dirls@
+ if nget(lc2@)!"../":{
+  chdir hsp_dir@+"\\common\\"
+  dirlist dirls,"*",5
+  chdir nget(lc2@)
+  filels@=""
+  dirlist filels@,"*.as",1
+  dirlist tmp@,"*.hsp",1
+  filels@+tmp@
+ }else:if nget(lc2@)="../":{
+  chdir "../"
+  filels@=""
+  dirlist filels@,"*.as",1
+  dirlist tmp@,"*.hsp",1
+  filels@+tmp@
+ }
+ dirlist tmp@,"*",5
+ notesel dirls@
+ dirls@=tmp@
+ noteadd "../",0,0
+ objprm objid@,filels@
+ objprm objid2@,dirls@
+ return
+#global
+screen 0,600,480-7
+title "HMM-"+version
+ netinit
+ config=""
+ bload "config.cfg",config
+// HMM HSP Module Manager
+/*ここを削除
+ if config="0":{
+  dialog "HSPのフォルダを指定してください"
+  hsp_dir="":selfolder hsp_dir,""
+  config="1\n"+hsp_dir
+  bsave "config.cfg",config
+ }
+/**/
+ hsp_dir="M:\\hsp351\\"
+ chdir hsp_dir+"\\common\\"
+ filels=""
+ dirls=""
+ url="https://example.com"
+ dirlist filels,"*.as",1
+ dirlist tmp,"*.hsp",1
+ filels+tmp
+ dirlist tmp,"*",5
+ notesel dirls
+ dirls+tmp
+ noteadd "../",0,0
+ notesel filels
+ objsize 300
+ listbox lc,300,filels
+ objid=stat
+ pos 300,0:listbox lc2,460,dirls
+ objid2=stat
+ pos 0,305
+ input hsp_dir
+ button gosub "再読み込み",*reload
+ button gosub "削除",*del
+ input url
+ button gosub "URLから追加",*addmod_url
+ button gosub "ファイルから追加",*addmod_file
+ button gosub "ファイルを開く",*exec_file
+ ollc2=lc2
+ repeat
+  if ollc2!lc2 and lc2!-1:getdls:ollc2=lc2
+  await 10
+ loop
+stop
+*del
+ delete ""+nget(lc)
+ regetls
+ return
+*reload
+ regetls
+ return
+*addmod_url
+ tmp=""
+ tmpurl=""
+ u=""
+ repeat
+  tmp+strmid(url,cnt,1)
+  if tmp="http://":u+strmid(url,cnt+1,99999):break
+  if tmp="https://":u+strmid(url,cnt+1,99999):break
+ loop
+ tmpurl=getpath(u,32)
+ fname=getpath(u,8)
+ dialog ""+tmpurl+fname
+ neturl ""+url
+ regetls
+ return
+*addmod_file
+ dialog "",16
+ if stat=0:return
+ bcopy refstr,hsp_dir+"\\common\\"+getpath(refstr,8)
+ regetls
+ return
+*exec_file
+	if nget(lc)="":return
+ exec ""+nget(lc),16
+ return
