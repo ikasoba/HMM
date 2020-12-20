@@ -1,3 +1,2 @@
-# HMM...
+# HMM
 HspModuleManagerだよ！<br>
-いい名前が思いつかないなぁ..。う～ん..。略してHMM!
